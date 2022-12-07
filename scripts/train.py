@@ -103,10 +103,11 @@ if __name__ == "__main__":
 
     # Load training status
 
-    try:
-        status = utils.get_status(model_dir)
-    except OSError:
-        status = {"num_frames": 0, "update": 0}
+    # try:
+    #     status = utils.get_status(model_dir)
+    # except OSError:
+    #     status = {"num_frames": 0, "update": 0}
+    status = {"num_frames": 0, "update": 0}
     txt_logger.info("Training status loaded\n")
 
     # Load observations preprocessor
@@ -141,7 +142,7 @@ if __name__ == "__main__":
     if "optimizer_state" in status:
         algo.optimizer.load_state_dict(status["optimizer_state"])
     txt_logger.info("Optimizer loaded\n")
-
+    breakpoint()
     # Train model
 
     num_frames = status["num_frames"]

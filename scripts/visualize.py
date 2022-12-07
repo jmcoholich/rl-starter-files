@@ -49,8 +49,10 @@ print("Environment loaded\n")
 # Load agent
 
 model_dir = utils.get_model_dir(args.model)
-agent = utils.Agent(env.observation_space, env.action_space, model_dir,
-                    argmax=args.argmax, use_memory=args.memory, use_text=args.text)
+# agent = utils.Agent(env.observation_space, env.action_space, model_dir,
+#                     argmax=args.argmax, use_memory=args.memory, use_text=args.text)
+agent = utils.GPTAgent(env.observation_space, env.action_space, model_dir,
+                       argmax=args.argmax, use_memory=args.memory, use_text=args.text)
 print("Agent loaded\n")
 
 # Run the agent
@@ -70,7 +72,7 @@ for episode in range(args.episodes):
         env.render()
         if args.gif:
             frames.append(numpy.moveaxis(env.get_frame(), 2, 0))
-
+        # breakpoint()
         action = agent.get_action(obs)
         obs, reward, terminated, truncated, _ = env.step(action)
         done = terminated | truncated

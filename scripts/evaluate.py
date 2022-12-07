@@ -72,6 +72,7 @@ if __name__ == "__main__":
     log_episode_num_frames = torch.zeros(args.procs, device=device)
 
     while log_done_counter < args.episodes:
+        # breakpoint()
         actions = agent.get_actions(obss)
         obss, rewards, terminateds, truncateds, _ = env.step(actions)
         dones = tuple(a | b for a, b in zip(terminateds, truncateds))
