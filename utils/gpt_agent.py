@@ -3,6 +3,8 @@ import torch
 import utils
 from .other import device
 from model import ACModel
+import numpy as np
+import openai
 
 
 class GPTAgent:
@@ -28,28 +30,134 @@ class GPTAgent:
         if hasattr(self.preprocess_obss, "vocab"):
             self.preprocess_obss.vocab.load_vocab(utils.get_vocab(model_dir))
 
+    def relative_goal_location(self, image):
+        # size is 7x7
+        idx = np.where(image == 8)
+
+        if len(idx[0]) == 0:  # the goal cannot be seen
+            return "at an unknown location"
+        row = idx[0].item()
+        col = idx[1].item()
+        how_far_fwd = 6 - col
+        how_far_right = row - 3
+        if how_far_fwd > 0 :
+            fwd = f"forward {how_far_fwd} square"
+            if how_far_right != 0:
+                fwd += ' and '
+        else:
+            fwd = ''
+        if how_far_fwd > 1:
+            fwd += 's'
+        lateral = ''
+        if how_far_right == 0:
+            lateral = ''
+        elif how_far_right > 0:
+            if how_far_right > 1:
+                word = 'squares'
+            else:
+                word = 'square'
+            lateral = f'{how_far_right} {word} to the right'
+        elif how_far_right < 0:
+            if how_far_right < -1:
+                word = 'squares'
+            else:
+                word = 'square'
+            lateral = f'{-how_far_right} {word} to the left'
+        return fwd + lateral
+
+
+    def relative_wall_location(self, image):
+        # size is 7x7
+        # print(np.equal(image, [2, 5, 0]).all(-1))
+        cols, = np.where(np.equal(image[3], [2, 5, 0]).all(-1))
+        rows, = np.where(~np.equal(image[:, -1], [2, 5, 0]).all(-1))
+        if len(rows) == 0:  # the walls cannot be seen
+            return ""
+        how_far_fwd = 6 - cols.max() - 1
+        how_far_left = 4 - rows.min() - 1
+        how_far_right = rows.max() - 2 - 1
+        output = f"There are walls located {how_far_fwd} squares in front of you, {how_far_right} squares to the right, and {how_far_left} to the left."
+        return output
+
     def get_actions(self, obss):
         """
         Direction 0 is right, 1 down, 3 up, 2 left
+        actions
+        0: turn left
+        1: turn right
+        2: move forward one square
 
         """
-        breakpoint()
+        dirs = {0: 'right', 1: 'down', 2: 'left', 3: 'up'}
+        actions = np.zeros((len(obss),))
+        for i, obs in enumerate(obss):
 
-        # a pixel with [8, 1, 0] is the goal square.
-        preprocessed_obss = self.preprocess_obss(obss, device=device)
 
-        with torch.no_grad():
-            if self.acmodel.recurrent:
-                dist, _, self.memories = self.acmodel(preprocessed_obss, self.memories)
-            else:
-                dist, _ = self.acmodel(preprocessed_obss)
+            example = (
+                "You are in a grid-world and the goal square is located forward 1 square and 1 square to the right relative to your current position. There are walls located 1 squares in front of you, 1 squares to the right, and 1 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n"
+                "1. move forward\n"
+                "2. turn right\n"
+                "3. move forward\n"
+                "Goal reached!\n"
+            )
+            example += '\n\n'
+            example = (
+                "You are in a grid-world and the goal square is located 2 squares to the left relative to your current position. There are walls located 2 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n"
+                "1. turn left\n"
+                "2. move forward\n"
+                "3. move forward\n"
+                "Goal reached!\n"
+            )
+            example += '\n\n'
+            example = (
+                "You are in a grid-world and the goal square is located at an unknown location relative to your current position. There are walls located 1 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n "
+                "1. turn left\n"
+            )
+            example += '\n\n'
+            prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
+            print(prompt)
+            example += prompt
 
-        if self.argmax:
-            actions = dist.probs.max(1, keepdim=True)[1]
-        else:
-            actions = dist.sample()
+            openai.api_key = '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'
 
-        return actions.cpu().numpy()
+            response = openai.Completion.create(
+                # model="text-curie-001",
+                model="text-davinci-002",
+                prompt=example,
+                temperature=0.0,
+                max_tokens=1000,
+            )
+            # print(response)
+            # print()
+            response = response.choices[0].text
+            print(response)
+            breakpoint()
+            # # print(response)
+            # first_step = response.split('\n')[0]
+            # if "forward" in first_step:
+            #     actions[i] = 2
+            # elif "right" in first_step:
+            #     actions[i] = 1
+            # elif "left" in first_step:
+            #     actions[i] = 0
+            actions[i] = np.random.randint(3)
+        return actions
+        # # a pixel with [8, 1, 0] is the goal square.
+        # preprocessed_obss = self.preprocess_obss(obss, device=device)
+
+        # with torch.no_grad():
+        #     if self.acmodel.recurrent:
+        #         dist, _, self.memories = self.acmodel(preprocessed_obss, self.memories)
+        #     else:
+        #         dist, _ = self.acmodel(preprocessed_obss)
+
+        # if self.argmax:
+        #     actions = dist.probs.max(1, keepdim=True)[1]
+        # else:
+        #     actions = dist.sample()
+        # print(actions)
+        # breakpoint()
+        # return actions.cpu().numpy()
 
     def get_action(self, obs):
         return self.get_actions([obs])[0]
