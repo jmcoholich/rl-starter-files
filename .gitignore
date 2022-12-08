@@ -1,3 +1,5 @@
 *__pycache__
 *egg-info
 .vscode
+
+utils/open_ai_key.txt

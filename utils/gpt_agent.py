@@ -20,7 +20,8 @@ class GPTAgent:
         self.acmodel = ACModel(obs_space, action_space, use_memory=use_memory, use_text=use_text)
         self.argmax = argmax
         self.num_envs = num_envs
-
+        with open('utils/open_ai_key.txt', 'r') as f:
+            openai.api_key = f.readlines()[0]
         if self.acmodel.recurrent:
             self.memories = torch.zeros(self.num_envs, self.acmodel.memory_size, device=device)
 
@@ -117,8 +118,6 @@ class GPTAgent:
             prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
             print(prompt)
             example += prompt
-
-            openai.api_key = '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'
 
             response = openai.Completion.create(
                 # model="text-curie-001",
