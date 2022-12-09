@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -x
+envs=(
+    "MiniGrid-Empty-Random-5x5-v0"
+    "MiniGrid-Empty-16x16-v0"
+)
+
+names=(
+    "five"
+    "sixteen"
+)
+
+backends=(
+    "text-curie-001"
+    "text-davinci-002"
+)
+
+# step_limits
+
+
+
+for i in ${!envs[@]}
+do
+    python -m scripts.train --algo ppo --env ${envs[$i]} --model ${names[$i]} --save-interval 10 --frames 80000
+    python -m scripts.visualize --env ${envs[$i]} --model ${names[$i]} --gif ${names[$i]} --episodes 1
+    python -m scripts.evaluate --env ${envs[$i]} --model ${names[$i]} --episodes 10
+    for j in ${!backends[@]}
+    do
+        python -m scripts.visualize --env ${envs[$i]} --model ${names[$i]} --gif ${names[$i]}_gpt_${backends[$i]} --episodes 1 --gpt --gpt_backend ${backends[$i]}
+        python -m scripts.evaluate --env ${envs[$i]}  --episodes 10 --model ${names[$i]} --gpt --gpt_backend ${backends[$i]}
+    done
+done

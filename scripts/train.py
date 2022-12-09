@@ -142,7 +142,7 @@ if __name__ == "__main__":
     if "optimizer_state" in status:
         algo.optimizer.load_state_dict(status["optimizer_state"])
     txt_logger.info("Optimizer loaded\n")
-    breakpoint()
+    # breakpoint()
     # Train model
 
     num_frames = status["num_frames"]

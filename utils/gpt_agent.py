@@ -6,6 +6,8 @@ from model import ACModel
 import numpy as np
 import openai
 
+import time
+
 
 class GPTAgent:
     """An agent.
@@ -15,7 +17,7 @@ class GPTAgent:
     - to analyze the feedback (i.e. reward and done state) of its action."""
 
     def __init__(self, obs_space, action_space, model_dir,
-                 argmax=False, num_envs=1, use_memory=False, use_text=False):
+                 argmax=False, num_envs=1, use_memory=False, use_text=False, backend="text-curie-001"):
         obs_space, self.preprocess_obss = utils.get_obss_preprocessor(obs_space)
         self.acmodel = ACModel(obs_space, action_space, use_memory=use_memory, use_text=use_text)
         self.argmax = argmax
@@ -30,6 +32,8 @@ class GPTAgent:
         self.acmodel.eval()
         if hasattr(self.preprocess_obss, "vocab"):
             self.preprocess_obss.vocab.load_vocab(utils.get_vocab(model_dir))
+        self.backend = backend
+
 
     def relative_goal_location(self, image):
         # size is 7x7
@@ -42,13 +46,13 @@ class GPTAgent:
         how_far_fwd = 6 - col
         how_far_right = row - 3
         if how_far_fwd > 0 :
-            fwd = f"forward {how_far_fwd} square"
+            fwd = f"forward {how_far_fwd} squares"
             if how_far_right != 0:
                 fwd += ' and '
         else:
             fwd = ''
-        if how_far_fwd > 1:
-            fwd += 's'
+        # if how_far_fwd > 1:
+        #     fwd += 's'
         lateral = ''
         if how_far_right == 0:
             lateral = ''
@@ -102,7 +106,7 @@ class GPTAgent:
                 "Goal reached!\n"
             )
             example += '\n\n'
-            example = (
+            example += (
                 "You are in a grid-world and the goal square is located 2 squares to the left relative to your current position. There are walls located 2 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n"
                 "1. turn left\n"
                 "2. move forward\n"
@@ -110,53 +114,31 @@ class GPTAgent:
                 "Goal reached!\n"
             )
             example += '\n\n'
-            example = (
+            example += (
                 "You are in a grid-world and the goal square is located at an unknown location relative to your current position. There are walls located 1 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n "
                 "1. turn left\n"
             )
             example += '\n\n'
             prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
-            print(prompt)
             example += prompt
-
+            time.sleep(5.0)
             response = openai.Completion.create(
                 # model="text-curie-001",
-                model="text-davinci-002",
+                model=self.backend,
                 prompt=example,
-                temperature=0.0,
+                temperature=0.6,
                 max_tokens=1000,
             )
-            # print(response)
-            # print()
             response = response.choices[0].text
-            print(response)
-            breakpoint()
-            # # print(response)
-            # first_step = response.split('\n')[0]
-            # if "forward" in first_step:
-            #     actions[i] = 2
-            # elif "right" in first_step:
-            #     actions[i] = 1
-            # elif "left" in first_step:
-            #     actions[i] = 0
-            actions[i] = np.random.randint(3)
+            first_step = response.split('\n')[0]
+            if "forward" in first_step:
+                actions[i] = 2
+            elif "right" in first_step:
+                actions[i] = 1
+            elif "left" in first_step:
+                actions[i] = 0
+            # actions[i] = np.random.randint(3)
         return actions
-        # # a pixel with [8, 1, 0] is the goal square.
-        # preprocessed_obss = self.preprocess_obss(obss, device=device)
-
-        # with torch.no_grad():
-        #     if self.acmodel.recurrent:
-        #         dist, _, self.memories = self.acmodel(preprocessed_obss, self.memories)
-        #     else:
-        #         dist, _ = self.acmodel(preprocessed_obss)
-
-        # if self.argmax:
-        #     actions = dist.probs.max(1, keepdim=True)[1]
-        # else:
-        #     actions = dist.sample()
-        # print(actions)
-        # breakpoint()
-        # return actions.cpu().numpy()
 
     def get_action(self, obs):
         return self.get_actions([obs])[0]

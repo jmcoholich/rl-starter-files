@@ -10,6 +10,10 @@ from utils import device
 parser = argparse.ArgumentParser()
 parser.add_argument("--env", required=True,
                     help="name of the environment to be run (REQUIRED)")
+parser.add_argument("--gpt", action='store_true',
+                    help="use the gpt chat agent")
+parser.add_argument("--gpt_backend", type=str,
+                    help="Gpt backend to use")
 parser.add_argument("--model", required=True,
                     help="name of the trained model (REQUIRED)")
 parser.add_argument("--seed", type=int, default=0,
@@ -49,10 +53,12 @@ print("Environment loaded\n")
 # Load agent
 
 model_dir = utils.get_model_dir(args.model)
-# agent = utils.Agent(env.observation_space, env.action_space, model_dir,
-#                     argmax=args.argmax, use_memory=args.memory, use_text=args.text)
-agent = utils.GPTAgent(env.observation_space, env.action_space, model_dir,
-                       argmax=args.argmax, use_memory=args.memory, use_text=args.text)
+if args.gpt:
+    agent = utils.GPTAgent(env.observation_space, env.action_space, model_dir,
+                           argmax=args.argmax, use_memory=args.memory, use_text=args.text, backend=args.gpt_backend)
+else:
+    agent = utils.Agent(env.observation_space, env.action_space, model_dir,
+                        argmax=args.argmax, use_memory=args.memory, use_text=args.text)
 print("Agent loaded\n")
 
 # Run the agent

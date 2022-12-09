@@ -12,6 +12,10 @@ from utils import device
 parser = argparse.ArgumentParser()
 parser.add_argument("--env", required=True,
                     help="name of the environment (REQUIRED)")
+parser.add_argument("--gpt", action='store_true',
+                    help="use the gpt chat agent"),
+parser.add_argument("--gpt_backend", type=str,
+                    help="Gpt backend to use")
 parser.add_argument("--model", required=True,
                     help="name of the trained model (REQUIRED)")
 parser.add_argument("--episodes", type=int, default=100,
@@ -52,9 +56,12 @@ if __name__ == "__main__":
     # Load agent
 
     model_dir = utils.get_model_dir(args.model)
-    agent = utils.Agent(env.observation_space, env.action_space, model_dir,
-                        argmax=args.argmax, num_envs=args.procs,
-                        use_memory=args.memory, use_text=args.text)
+    if args.gpt:
+        agent = utils.GPTAgent(env.observation_space, env.action_space, model_dir, argmax=args.argmax, num_envs=args.procs, use_memory=args.memory, use_text=args.text, backend=args.gpt_backend)
+    else:
+        agent = utils.Agent(env.observation_space, env.action_space, model_dir,
+                            argmax=args.argmax, num_envs=args.procs,
+                            use_memory=args.memory, use_text=args.text)
     print("Agent loaded\n")
 
     # Initialize logs
@@ -72,7 +79,6 @@ if __name__ == "__main__":
     log_episode_num_frames = torch.zeros(args.procs, device=device)
 
     while log_done_counter < args.episodes:
-        # breakpoint()
         actions = agent.get_actions(obss)
         obss, rewards, terminateds, truncateds, _ = env.step(actions)
         dones = tuple(a | b for a, b in zip(terminateds, truncateds))
