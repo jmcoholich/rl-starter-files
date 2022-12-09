@@ -79,9 +79,10 @@ class GPTAgent:
         if len(rows) == 0:  # the walls cannot be seen
             return ""
         how_far_fwd = 6 - cols.max() - 1
-        how_far_left = 4 - rows.min() - 1
-        how_far_right = rows.max() - 2 - 1
-        output = f"There are walls located {how_far_fwd} squares in front of you, {how_far_right} squares to the right, and {how_far_left} to the left."
+        # how_far_left = 4 - rows.min() - 1
+        # how_far_right = rows.max() - 2 - 1  # TODO handle cases when all some other walls cannot be seen.
+        output = f"There is a wall located {how_far_fwd} squares in front of you."
+        # , {how_far_right} squares to the right, and {how_far_left} to the left."
         return output
 
     def get_actions(self, obss):
@@ -99,7 +100,7 @@ class GPTAgent:
 
 
             example = (
-                "You are in a grid-world and the goal square is located forward 1 square and 1 square to the right relative to your current position. There are walls located 1 squares in front of you, 1 squares to the right, and 1 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n"
+                "You are in a grid-world and the goal square is located forward 1 square and 1 square to the right relative to your current position. There is a wall located 1 squares in front of you. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n"
                 "1. move forward\n"
                 "2. turn right\n"
                 "3. move forward\n"
@@ -107,7 +108,7 @@ class GPTAgent:
             )
             example += '\n\n'
             example += (
-                "You are in a grid-world and the goal square is located 2 squares to the left relative to your current position. There are walls located 2 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n"
+                "You are in a grid-world and the goal square is located 2 squares to the left relative to your current position. There is a wall located 2 squares in front of you. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n"
                 "1. turn left\n"
                 "2. move forward\n"
                 "3. move forward\n"
@@ -115,13 +116,36 @@ class GPTAgent:
             )
             example += '\n\n'
             example += (
-                "You are in a grid-world and the goal square is located at an unknown location relative to your current position. There are walls located 1 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n "
+                "You are in a grid-world and the goal square is located at an unknown location relative to your current position. There is a wall located 1 squares in front of you. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n "
                 "1. turn left\n"
             )
             example += '\n\n'
             prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
             example += prompt
-            time.sleep(5.0)
+            # example = (
+            #     "You are in a grid-world and the goal square is located forward 1 square and 1 square to the right relative to your current position. There are walls located 1 squares in front of you, 1 squares to the right, and 1 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n"
+            #     "1. move forward\n"
+            #     "2. turn right\n"
+            #     "3. move forward\n"
+            #     "Goal reached!\n"
+            # )
+            # example += '\n\n'
+            # example += (
+            #     "You are in a grid-world and the goal square is located 2 squares to the left relative to your current position. There are walls located 2 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n"
+            #     "1. turn left\n"
+            #     "2. move forward\n"
+            #     "3. move forward\n"
+            #     "Goal reached!\n"
+            # )
+            # example += '\n\n'
+            # example += (
+            #     "You are in a grid-world and the goal square is located at an unknown location relative to your current position. There are walls located 1 squares in front of you, 0 squares to the right, and 2 to the left. The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square.\n "
+            #     "1. turn left\n"
+            # )
+            # example += '\n\n'
+            # prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
+            # example += prompt
+            time.sleep(10.0)
             response = openai.Completion.create(
                 # model="text-curie-001",
                 model=self.backend,
