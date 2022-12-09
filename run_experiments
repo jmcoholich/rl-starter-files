@@ -1,32 +1,39 @@
 #!/usr/bin/env bash
 set -x
-envs=(
-    "MiniGrid-Empty-Random-5x5-v0"
-    "MiniGrid-Empty-Random-6x6-v0"
-)
+# envs=(
+#     "MiniGrid-Empty-Random-5x5-v0"
+#     "MiniGrid-Empty-Random-6x6-v0"
+# )
 
-names=(
-    "five"
-    "six"
-)
+# names=(
+#     "five"
+#     "six"
+# )
 
-backends=(
-    "text-curie-001"
-    "text-davinci-002"
-)
+# backends=(
+#     "text-curie-001"
+#     "text-davinci-002"
+# )
 
-# step_limits
+# # step_limits
 
 
 
-for i in ${!envs[@]}
-do
-    python -m scripts.train --algo ppo --env ${envs[$i]} --model ${names[$i]} --save-interval 10 --frames 80000
-    python -m scripts.visualize --env ${envs[$i]} --model ${names[$i]} --gif ${names[$i]} --episodes 1
-    python -m scripts.evaluate --env ${envs[$i]} --model ${names[$i]} --episodes 10
-    for j in ${!backends[@]}
-    do
-        python -m scripts.visualize --env ${envs[$i]} --model ${names[$i]} --gif ${names[$i]}_gpt_${backends[$i]} --episodes 1 --gpt --gpt_backend ${backends[$i]}
-        python -m scripts.evaluate --env ${envs[$i]}  --episodes 10 --model ${names[$i]} --gpt --gpt_backend ${backends[$i]}
-    done
-done
+# for i in ${!envs[@]}
+# do
+#     python -m scripts.train --algo ppo --env ${envs[$i]} --model ${names[$i]} --save-interval 10 --frames 80000
+#     python -m scripts.visualize --env ${envs[$i]} --model ${names[$i]} --gif ${names[$i]} --episodes 1
+#     python -m scripts.evaluate --env ${envs[$i]} --model ${names[$i]} --episodes 10
+#     for j in ${!backends[@]}
+#     do
+#         python -m scripts.visualize --env ${envs[$i]} --model ${names[$i]} --gif ${names[$i]}_gpt_${backends[$i]} --episodes 1 --gpt --gpt_backend ${backends[$j]}
+#         python -m scripts.evaluate --env ${envs[$i]}  --episodes 10 --model ${names[$i]} --gpt --gpt_backend ${backends[$j]}
+#     done
+# done
+
+
+python -m scripts.evaluate --env MiniGrid-Empty-Random-6x6-v0 --episodes 10 --model six --gpt --gpt_backend text-curie-001
+python -m scripts.visualize --env MiniGrid-Empty-Random-6x6-v0 --model six --gif six_gpt_text-curie-001 --episodes 1 --gpt --gpt_backend text-curie-001
+
+python -m scripts.evaluate --env MiniGrid-Empty-Random-5x5-v0 --episodes 10 --model five --gpt --gpt_backend text-davinci-002
+python -m scripts.visualize --env MiniGrid-Empty-Random-5x5-v0 --model five --gif five_gpt_text-davinci-002 --episodes 1 --gpt --gpt_backend text-davinci-002

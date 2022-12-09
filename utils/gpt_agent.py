@@ -145,7 +145,7 @@ class GPTAgent:
             # example += '\n\n'
             # prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
             # example += prompt
-            time.sleep(10.0)
+            time.sleep(5.0)
             response = openai.Completion.create(
                 # model="text-curie-001",
                 model=self.backend,
