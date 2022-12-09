@@ -32,8 +32,14 @@ set -x
 # done
 
 
-python -m scripts.evaluate --env MiniGrid-Empty-Random-6x6-v0 --episodes 10 --model six --gpt --gpt_backend text-curie-001
-python -m scripts.visualize --env MiniGrid-Empty-Random-6x6-v0 --model six --gif six_gpt_text-curie-001 --episodes 1 --gpt --gpt_backend text-curie-001
+# python -m scripts.evaluate --env MiniGrid-Empty-Random-6x6-v0 --episodes 10 --model six --gpt --gpt_backend text-curie-001
+# python -m scripts.visualize --env MiniGrid-Empty-Random-6x6-v0 --model six --gif six_gpt_text-curie-001 --episodes 1 --gpt --gpt_backend text-curie-001
 
-python -m scripts.evaluate --env MiniGrid-Empty-Random-5x5-v0 --episodes 10 --model five --gpt --gpt_backend text-davinci-002
-python -m scripts.visualize --env MiniGrid-Empty-Random-5x5-v0 --model five --gif five_gpt_text-davinci-002 --episodes 1 --gpt --gpt_backend text-davinci-002
+# python -m scripts.evaluate --env MiniGrid-Empty-Random-5x5-v0 --episodes 10 --model five --gpt --gpt_backend text-davinci-002
+# python -m scripts.visualize --env MiniGrid-Empty-Random-5x5-v0 --model five --gif five_gpt_text-davinci-002 --episodes 1 --gpt --gpt_backend text-davinci-002
+
+python -m scripts.evaluate --env MiniGrid-Empty-Random-6x6-v0 --episodes 10 --model six --random
+python -m scripts.visualize --env MiniGrid-Empty-Random-6x6-v0 --model six --gif six_random --episodes 1 --random
+
+python -m scripts.evaluate --env MiniGrid-Empty-Random-5x5-v0 --episodes 10 --model five --random
+python -m scripts.visualize --env MiniGrid-Empty-Random-5x5-v0 --model five --gif five_random --episodes 1 --random

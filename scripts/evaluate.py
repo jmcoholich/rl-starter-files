@@ -32,6 +32,8 @@ parser.add_argument("--memory", action="store_true", default=False,
                     help="add a LSTM to the model")
 parser.add_argument("--text", action="store_true", default=False,
                     help="add a GRU to the model")
+parser.add_argument("--random", action='store_true',
+                    help="use the random agent")
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -58,6 +60,10 @@ if __name__ == "__main__":
     model_dir = utils.get_model_dir(args.model)
     if args.gpt:
         agent = utils.GPTAgent(env.observation_space, env.action_space, model_dir, argmax=args.argmax, num_envs=args.procs, use_memory=args.memory, use_text=args.text, backend=args.gpt_backend)
+    elif args.random:
+        agent = utils.RandomAgent(env.observation_space, env.action_space, model_dir,
+                                  argmax=args.argmax, num_envs=args.procs,
+                                  use_memory=args.memory, use_text=args.text)
     else:
         agent = utils.Agent(env.observation_space, env.action_space, model_dir,
                             argmax=args.argmax, num_envs=args.procs,

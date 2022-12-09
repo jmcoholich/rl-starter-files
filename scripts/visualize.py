@@ -12,6 +12,8 @@ parser.add_argument("--env", required=True,
                     help="name of the environment to be run (REQUIRED)")
 parser.add_argument("--gpt", action='store_true',
                     help="use the gpt chat agent")
+parser.add_argument("--random", action='store_true',
+                    help="use the random agent")
 parser.add_argument("--gpt_backend", type=str,
                     help="Gpt backend to use")
 parser.add_argument("--model", required=True,
@@ -56,6 +58,9 @@ model_dir = utils.get_model_dir(args.model)
 if args.gpt:
     agent = utils.GPTAgent(env.observation_space, env.action_space, model_dir,
                            argmax=args.argmax, use_memory=args.memory, use_text=args.text, backend=args.gpt_backend)
+elif args.random:
+    agent = utils.RandomAgent(env.observation_space, env.action_space, model_dir,
+                              argmax=args.argmax, use_memory=args.memory, use_text=args.text)
 else:
     agent = utils.Agent(env.observation_space, env.action_space, model_dir,
                         argmax=args.argmax, use_memory=args.memory, use_text=args.text)
