@@ -145,43 +145,44 @@ class GPTAgent:
             # example += '\n\n'
             # prompt = (f"You are in a grid-world and the goal square is located {self.relative_goal_location(obs['image'])} relative to your current position. {self.relative_wall_location(obs['image'])} The possible actions you can take are to turn left, turn right, or move forward one square. Write a list of actions to reach the goal square. \n")
             # example += prompt
-            # time.sleep(5.0)
-            # response = openai.Completion.create(
-            #     model=self.backend,
+            time.sleep(5.0)
+            response = openai.Completion.create(
+                model=self.backend,
+                prompt=example,
+                temperature=0.6,
+                max_tokens=1000,
+            )
+            response = response.choices[0].text
+            # d_response = openai.Completion.create(
+            #     # model="text-curie-001",
+            #     model='text-davinci-002',
             #     prompt=example,
             #     temperature=0.6,
             #     max_tokens=1000,
             # )
-            d_response = openai.Completion.create(
-                # model="text-curie-001",
-                model='text-davinci-002',
-                prompt=example,
-                temperature=0.6,
-                max_tokens=1000,
-            )
-            c_response = openai.Completion.create(
-                model="text-curie-001",
-                prompt=example,
-                temperature=0.6,
-                max_tokens=1000,
-            )
-            d_response = d_response.choices[0].text
-            c_response = c_response.choices[0].text
-            print("PROMPT:  ", prompt)
-            print()
-            print("DaVinci RESPONSE:  ", d_response)
-            print()
-            print("Curie RESPONSE:  ", c_response)
-            print()
-            breakpoint()
-            # first_step = response.split('\n')[0]
-            # if "forward" in first_step:
-            #     actions[i] = 2
-            # elif "right" in first_step:
-            #     actions[i] = 1
-            # elif "left" in first_step:
-            #     actions[i] = 0
-            actions[i] = np.random.randint(3)
+            # c_response = openai.Completion.create(
+            #     model="text-curie-001",
+            #     prompt=example,
+            #     temperature=0.6,
+            #     max_tokens=1000,
+            # )
+            # d_response = d_response.choices[0].text
+            # c_response = c_response.choices[0].text
+            # print("PROMPT:  ", prompt)
+            # print()
+            # print("DaVinci RESPONSE:  ", d_response)
+            # print()
+            # print("Curie RESPONSE:  ", c_response)
+            # print()
+            # breakpoint()
+            first_step = response.split('\n')[0]
+            if "forward" in first_step:
+                actions[i] = 2
+            elif "right" in first_step:
+                actions[i] = 1
+            elif "left" in first_step:
+                actions[i] = 0
+            # actions[i] = np.random.randint(3)
         return actions
 
     def get_action(self, obs):
